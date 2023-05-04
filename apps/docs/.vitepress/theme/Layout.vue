@@ -2,17 +2,18 @@
   <BContainer fluid class="p-0">
     <BRow>
       <BCol>
-    <BNavbar variant="primary">
+    <BNavbar variant="primary" >
       <BNavbarNav>
+        <BNavbarBrand to="/"><img src="/logo.png" width="40"></BNavbarBrand>
         <BNavbarBrand to="/">Home</BNavbarBrand>
         <BNav>
-          <BNavItem to="/getting-started">Getting Started</BNavItem>
-          <BNavItem to="/reference/components">Components</BNavItem>
-          <BNavItem to="/reference/composables">Composables</BNavItem>
-          <BNavItem to="/reference/directives">Directives</BNavItem>
-          <BNavItem to="/reference/icons">Icons</BNavItem>
-          <BNavItem to="/reference/types">Types</BNavItem>
-          <BNavItem to="/migration-guide">Migrate</BNavItem>
+          <BNavItem to="/introduction/getting-started" :active="actualPage == 'home'">Getting Started</BNavItem>
+          <BNavItem to="/reference/components" :active="actualPage == 'components'">Components</BNavItem>
+          <BNavItem to="/reference/composables" :active="actualPage == 'composables'">Composables</BNavItem>
+          <BNavItem to="/reference/directives" :active="actualPage == 'directives'">Directives</BNavItem>
+          <BNavItem to="/reference/icons" :active="actualPage == 'icons'">Icons</BNavItem>
+          <BNavItem to="/reference/types" :active="actualPage == 'types'">Types</BNavItem>
+          <BNavItem to="/migration-guide" :active="actualPage == 'migration'">Migrate</BNavItem>
         </BNav>
       </BNavbarNav>
       <BNav>
@@ -65,10 +66,20 @@
     </BRow>
     <BRow v-else>
       <BCol>
-        <BContainer>
+        <BContainer v-if="actualPage !== 'home'">
+          <BRow class="mt-4">
+            <BCol cols="2">
+              <Sidebar></Sidebar>
+            </BCol>
+            <BCol cols="10">
+              <Content />
+            </BCol>
+          </BRow>
+        </BContainer>
+        <BContainer :fluid="true" v-else>
           <BRow>
             <BCol>
-              <Content />
+              <Index />
             </BCol>
           </BRow>
         </BContainer>
@@ -85,15 +96,33 @@ import DiscordIcon from '~icons/bi/discord'
 import MoonStarsFill from '~icons/bi/moon-stars-fill'
 import SunFill from '~icons/bi/sun-fill'
 import CircleHalf from '~icons/bi/circle-half'
-import { useData } from 'vitepress'
-import {appInfoKey} from './keys'
+import { useData, onContentUpdated } from 'vitepress'
+import { appInfoKey } from './keys'
+import Sidebar from './Sidebar.vue'
+import Index from './Home.vue';
 
 // https://vitepress.dev/reference/runtime-api#usedata
 const { page } = useData()
 
 const variant = null as any
-
 const show = ref(false)
+const actualPage = ref('home')
+
+onContentUpdated(() => {
+  actualPage.value = getActualPage();
+  console.log(actualPage);
+});
+
+function getActualPage() {
+  if(page.value.filePath.includes('/introduction')) return 'introduction'
+  else if(page.value.filePath.includes('/components')) return 'components'
+  else if(page.value.filePath.includes('/composables')) return 'composables'
+  else if(page.value.filePath.includes('/directives')) return 'directives'
+  else if(page.value.filePath.includes('/icons')) return 'icons'
+  else if(page.value.filePath.includes('/types')) return 'types'
+  else if(page.value.filePath.includes('migration-guide')) return 'migration'
+  else return 'home';
+}
 
 onMounted(() => { show.value = true })
 
@@ -108,7 +137,6 @@ const map = {
   light: SunFill,
   auto: CircleHalf,
 }
-
 const options = Object.keys(map) as (keyof typeof map)[]
 
 const currentIcon = computed(() => map[dark.value])

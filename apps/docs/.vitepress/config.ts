@@ -32,5 +32,4 @@ export default defineConfig({
       lang: 'en'
     }
   },
-  appearance: false
 })
